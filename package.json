@@ -1,0 +1,28 @@
+{
+  "name": "stardew-valley-launcher",
+  "version": "1.0.0",
+  "description": "A launcher for my stardew valley clone programming project",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/joedthomas2005/programming-project-launcher.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joedthomas2005/programming-project-launcher/issues"
+  },
+  "homepage": "https://github.com/joedthomas2005/programming-project-launcher#readme",
+  "devDependencies": {
+    "electron": "^19.0.8"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.9",
+    "eslint": "^8.19.0",
+    "follow-redirects": "^1.15.1",
+    "path": "^0.12.7"
+  }
+}

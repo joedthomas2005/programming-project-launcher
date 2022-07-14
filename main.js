@@ -11,16 +11,11 @@ const createWindow = () => {
         }
     });
     
-    ipcMain.on("isInstalled", (event, location) => {
-        actions.verifyInstall(location);
-    });
-    ipcMain.on("install", (event, location) => {
-        console.log("Install at " + location);
-        actions.install(location);
-    });
-    ipcMain.on("launch", (event, location, options) => {
-        actions.launch(location, options);
-    });
+    ipcMain.handle("install", (event, location) => actions.install(location));
+    
+    ipcMain.handle("launch", (event, location, options) => actions.launch(location, options));
+
+    ipcMain.handle("checkInstalled", (event, location) => actions.checkInstalled(location))
     win.loadFile(path.join(__dirname, "frontend/index.html"));
 };
 

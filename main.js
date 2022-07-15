@@ -15,7 +15,7 @@ const createWindow = () => {
     
     ipcMain.handle("launch", (event, location, options) => actions.launch(location, options));
 
-    ipcMain.handle("checkInstalled", (event, location) => actions.checkInstalled(location))
+    ipcMain.handle("checkInstalled", (event, location) => actions.checkInstalled(location));
     win.loadFile(path.join(__dirname, "frontend/index.html"));
 };
 

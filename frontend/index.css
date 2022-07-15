@@ -1,0 +1,28 @@
+body{
+    font-family:'Courier New', Courier, monospace;
+}
+
+.btn {
+    border-radius: 20%;
+    outline: 1px solid grey;
+    margin-top: 30%;
+    font-size:large;
+    width: 100px;
+    height: 50px;
+    background-color: darkseagreen;
+}
+
+#title{
+    margin-top: 10%;
+}
+.btn:active{
+    background-color: seagreen;
+}
+#content{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}

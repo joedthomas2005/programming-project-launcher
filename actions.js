@@ -153,16 +153,18 @@ function installGame(installLocation){
 }
 
 function checkInstalled(installLocation){
-    if(!fs.existsSync(installLocation)){
-        return false
-    }
-    if(!fs.existsSync(path.join(installLocation, "build"))){
-        return false
-    }
-    if(!fs.existsSync(path.join(installLocation, "lib"))){
-        return false
-    }
-    return true
+    return new Promise((resolve, reject) => {
+        if(!fs.existsSync(installLocation)){
+            resolve(false);
+        }
+        if(!fs.existsSync(path.join(installLocation, "build"))){
+            resolve(false);
+        }
+        if(!fs.existsSync(path.join(installLocation, "lib"))){
+            resolve(false);
+        }
+        resolve(true);
+    });
 }
 
 module.exports = {

@@ -11,12 +11,16 @@ const createWindow = () => {
         }
     });
     
-    ipcMain.handle("install", (event, location) => actions.install(location));
-    
-    ipcMain.handle("launch", (event, location, options) => actions.launch(location, options));
-
-    ipcMain.handle("checkInstalled", (event, location) => actions.checkInstalled(location));
+    ipcMain.handle("uninstall", (_event, location) => actions.uninstall(location));
+    ipcMain.handle("download", (_event) => actions.download());
+    ipcMain.handle("build", (_event, location) => actions.build(location));
+    ipcMain.handle("extract", (_event, location) => actions.extract(location));
+    ipcMain.handle("launch", (_event, location, options) => actions.launch(location, options));
+    ipcMain.handle("checkInstalled", (_event, location) => actions.checkInstalled(location));
+    ipcMain.handle("getConfiguration", (_event) => actions.getConfiguration());
+    ipcMain.handle("saveConfiguration", (_event, configuration) => actions.saveConfiguration(configuration));
     win.loadFile(path.join(__dirname, "frontend/index.html"));
+    win.removeMenu();
 };
 
 app.whenReady().then(() => {

@@ -6,6 +6,7 @@ const admZip = require("adm-zip");
 
 const gitURL = "https://github.com/joedthomas2005/programming-project/archive/refs/heads/master.zip";
 const archiveName = "programming-project-master";
+let launchConf = "launch.conf";
 
 //This is a breadth-first tree traversal
 function getDirectoryRecursive(dir){
@@ -50,15 +51,14 @@ function buildGame(installLocation){
         let buildCommand = `javac -d ${path.join(installLocation, "build")} -target 17 -cp \"${classpath.join(';')}\" ${srcFiles.join(" ")}`;
         exec(buildCommand, (error, stdout, stderr) => {
             if(error){
-                reject(error.message);
+                return reject(error.message); //Command has failed to execute
             }
             if(stderr){
-                reject(error.message);
+                return reject(error.message); //Command has failed during execution
             }
-            resolve(true);
-        })
-    })
-
+            return resolve("OK");
+        });
+    });
 }
 
 function launchGame(installLocation, launchOptions){
@@ -71,7 +71,6 @@ function launchGame(installLocation, launchOptions){
         let classpath = [path.join(installLocation, "build")];
         let libDirectory = path.join(installLocation, "lib");
         
-        console.log(`Resource directory: ${resourceDirectory}`);
         let libFiles = fs.readdirSync(libDirectory);
         libFiles.forEach((file, index) => {
             classpath.push(path.join(libDirectory, file));
@@ -79,96 +78,200 @@ function launchGame(installLocation, launchOptions){
         let launchCommand = `java -classpath \"${classpath.join(';')}\" Main ${width} ${height} ${fullscreen} ${swapInterval} ${resourceDirectory}`;
         exec(launchCommand, (error, stdout, stderr) => {
             if(error){
-                reject(error.message);
-                return;
+                return reject(error.message);
             }
             if(stderr){
-                reject(stderr.message);
+                return reject(stderr.message);
             }
-            resolve(true);
+            return resolve("OK");
         });
-    })
+    });
+}
 
+function deleteGame(installLocation){
+    return new Promise((resolve, reject) => {
+        if(fs.existsSync(installLocation)){
+            try{
+                let files = fs.readdirSync(installLocation);
+                files.forEach((file, _index) => {
+                    fs.rmSync(path.join(installLocation, file), {
+                        recursive: true,
+                        force: true
+                    });
+                });
+                return resolve("OK");  
+            } catch(err){
+                return reject(err);
+            }
+        } else {
+            return resolve("not installed");
+        }
+    });
+}
+
+function downloadGame(){
+    return new Promise((resolve, reject) => {
+        try{
+            const archive = fs.createWriteStream(path.join(__dirname, "stardew-valley.zip"));
+            https.get(gitURL, response => {
+                if(![200, 302].includes(response.statusCode)){
+                    return reject(response.statusCode);
+                }
+                response.pipe(archive);
+                archive.on("finish", () => {
+                    archive.close();
+                    return resolve("OK");
+                })
+                .on("error", (err) => {
+                    //Close writeStream and clean up
+                    archive.destroy();
+                    fs.rm(path.join(__dirname, "stardew-valley.zip"));
+                    return reject(err);
+                });
+            });
+        } catch(err){
+            return reject(err);
+        }
+    });
+}
+
+function extractGame(installLocation){
+    return new Promise((resolve, reject) => {
+        if(!fs.existsSync(installLocation)){
+            fs.mkdirSync((installLocation), {
+                recursive: true
+            });
+        }
+        let archive = new admZip(path.join(__dirname, "stardew-valley.zip"));
+        
+        try{
+            archive.extractAllTo(installLocation, true);
+            
+            let files = fs.readdirSync(path.join(installLocation, archiveName));
+            files.forEach((file, index) => {
+                fs.renameSync(
+                    path.join(installLocation, archiveName, file), 
+                    path.join(installLocation, file)
+                    );
+                });
+            } catch(err) {
+                //All errors which could occur during this block are critical as the game will not be installed properly.
+                return reject(err);
+            }
+
+            fs.rm(path.join(__dirname, "stardew-valley.zip"), err => {
+                if(err){
+                    console.error(err);  //Errors here are non-critical and so I will not reject the promise
+                }
+            });
+
+            fs.rm(path.join(installLocation, archiveName), {
+                recursive: true,
+                force: true
+            }, err => {
+                if(err){
+                    console.error(err); //Non-critical
+                }
+            });
+            return resolve("OK");
+    });
 }
 
 function installGame(installLocation){
     return new Promise((resolve, reject) => {
-        if(!fs.existsSync(installLocation)){
-            fs.mkdirSync(installLocation, {
-                recursive: true
-            });
-        }
-    
-        if(fs.existsSync(path.join(__dirname, "stardew-valley.zip"))){
-            fs.rmSync(path.join(__dirname, "stardew-valley.zip"));
-        }
-    
-        fs.readdir(installLocation, (err, files) => {
-            files.forEach((file, index) => {
-                fs.rmSync(path.join(installLocation, file), {
-                    recursive: true,
-                    force: true
-                });
-            });
-        });
         const outFile =  fs.createWriteStream(path.join(__dirname, "stardew-valley.zip"));
         const request = https.get(gitURL, function(response){
             response.pipe(outFile);
             outFile.on("finish", () => {
                 outFile.close();
-                console.log("Download completed");
                 let archive = new admZip(path.join(__dirname, "stardew-valley.zip"));
                 archive.extractAllTo(path.join(installLocation), true);
-                fs.rm(path.join(__dirname, "stardew-valley.zip"),  err => {if(err !== null){console.log(err);}});
+                fs.rm(path.join(__dirname, "stardew-valley.zip"),  err => {if(err){console.log(err);}});
                 
                 files = fs.readdirSync(path.join(installLocation, archiveName));
                 files.forEach((file, index) => {
                     fs.renameSync(path.join(installLocation, archiveName, file), path.join(installLocation, file), (err) =>{
-                        if(err !== null){
-                            reject(err);
+                        if(err){
+                            return reject(err);
                         }
                     });
                 });
                 fs.rm(path.join(installLocation, archiveName),{
                     recursive: true,
                     force: true
-                }, (err) => {
-                    if(err !== null){
-                        reject(err);
+                }, err => {
+                    if(err){
+                        return reject(err);
                     }
-                })
-                buildGame(installLocation).then((success) => {
-                    resolve(true);
-                }, (error) => {
-                    reject(error);
+                });
+                buildGame(installLocation).then(success => {
+                    return resolve(true);
+                }, error => {
+                    return reject(error);
                 });
                     
-            }).on("error", (err) => {
+            }).on("error", err => {
                 fs.unlink(outFile);
-                reject(err);
+                return reject(err);
             });
         });
-    })
-
+    });
 }
 
 function checkInstalled(installLocation){
     return new Promise((resolve, reject) => {
         if(!fs.existsSync(installLocation)){
-            resolve(false);
+            return resolve(false);
         }
         if(!fs.existsSync(path.join(installLocation, "build"))){
-            resolve(false);
+            return resolve(false);
         }
         if(!fs.existsSync(path.join(installLocation, "lib"))){
-            resolve(false);
+            return resolve(false);
         }
-        resolve(true);
+        return resolve(true);
+    });
+}
+
+function getLaunchConfiguration(){
+    return new Promise((resolve, reject) => {
+        if(fs.existsSync(launchConf)){
+            let rawJSON = fs.readFileSync(launchConf);
+            try{
+                let config = JSON.parse(rawJSON);  
+                return resolve(config);
+            } catch(err){
+                return reject("invalid config");
+            }
+        } else {
+            return reject("no config");
+        }
+    });
+}
+
+function saveLaunchConfiguration(configuration){
+    return new Promise((resolve, reject) => {
+        try{
+            let rawJSON = JSON.stringify(configuration);
+            fs.writeFile(launchConf, rawJSON, err => {
+                if(err){
+                    return reject(`error writing to launch.conf: ${err}`);
+                }
+                return resolve("OK");
+            });
+        } catch(err) {
+            return reject("cannot convert to JSON");
+        }
     });
 }
 
 module.exports = {
-    install: installGame,
+    getConfiguration: getLaunchConfiguration,
+    saveConfiguration: saveLaunchConfiguration, 
+    uninstall: deleteGame,
+    download: downloadGame,
+    extract: extractGame,
+    build: buildGame,
     checkInstalled: checkInstalled,
     launch: launchGame
 };

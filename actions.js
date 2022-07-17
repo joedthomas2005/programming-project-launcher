@@ -177,47 +177,6 @@ function extractGame(installLocation){
     });
 }
 
-function installGame(installLocation){
-    return new Promise((resolve, reject) => {
-        const outFile =  fs.createWriteStream(path.join(__dirname, "stardew-valley.zip"));
-        const request = https.get(gitURL, function(response){
-            response.pipe(outFile);
-            outFile.on("finish", () => {
-                outFile.close();
-                let archive = new admZip(path.join(__dirname, "stardew-valley.zip"));
-                archive.extractAllTo(path.join(installLocation), true);
-                fs.rm(path.join(__dirname, "stardew-valley.zip"),  err => {if(err){console.log(err);}});
-                
-                files = fs.readdirSync(path.join(installLocation, archiveName));
-                files.forEach((file, index) => {
-                    fs.renameSync(path.join(installLocation, archiveName, file), path.join(installLocation, file), (err) =>{
-                        if(err){
-                            return reject(err);
-                        }
-                    });
-                });
-                fs.rm(path.join(installLocation, archiveName),{
-                    recursive: true,
-                    force: true
-                }, err => {
-                    if(err){
-                        return reject(err);
-                    }
-                });
-                buildGame(installLocation).then(success => {
-                    return resolve(true);
-                }, error => {
-                    return reject(error);
-                });
-                    
-            }).on("error", err => {
-                fs.unlink(outFile);
-                return reject(err);
-            });
-        });
-    });
-}
-
 function checkInstalled(installLocation){
     return new Promise((resolve, reject) => {
         if(!fs.existsSync(installLocation)){

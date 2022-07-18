@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('installer', {
     launch: (location, launchOptions) => ipcRenderer.invoke("launch", location, launchOptions),
     checkInstalled: location => ipcRenderer.invoke("checkInstalled", location),
     getConfiguration: () => ipcRenderer.invoke("getConfiguration"),
-    saveConfiguration: (configuration) => ipcRenderer.invoke("saveConfiguration", configuration)
+    saveConfiguration: (configuration) => ipcRenderer.invoke("saveConfiguration", configuration),
+    checkForUpdate: () => ipcRenderer.invoke("checkForUpdate")
 });

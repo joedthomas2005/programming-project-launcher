@@ -2,4 +2,4 @@ node_modules/
 app/
 npm-debug.log
 .jshintrc
-.lwjgl/
+version.cur

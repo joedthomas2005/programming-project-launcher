@@ -5,6 +5,7 @@ const https = require("follow-redirects").https;
 const admZip = require("adm-zip");
 
 const gitURL = "https://github.com/joedthomas2005/programming-project/archive/refs/heads/master.zip";
+const gitLastCommitAPI = "https://api.github.com/repos/joedthomas2005/programming-project/commits/master";
 const archiveName = "programming-project-master";
 let launchConf = "launch.conf";
 
@@ -27,6 +28,54 @@ function getDirectoryRecursive(dir){
         files = files.concat(subDirFiles);
     });
     return files;
+}
+
+function getLatestCommit(){
+    return new Promise((resolve, reject) => {
+        https.get(gitLastCommitAPI, {"headers": {"User-Agent":"node-js/16.13.0"}},response => {
+            if(response.statusCode >= 400){
+                return reject(response.statusCode);
+            }
+            let resBody = "";
+            response.on("data", chunk => {
+                resBody += chunk;
+            });
+            response.on("end", () => {
+                try{
+                    let commitInfoJSON = JSON.parse(resBody);
+                    let commitSHA = commitInfoJSON.sha;
+                    return resolve(commitSHA);
+                } catch (err){
+                    return reject(err);
+                }
+            }); 
+            response.on("error", err => {
+                return reject(err);
+            });
+        });
+    });
+}
+
+function checkForUpdate(){
+    return new Promise((resolve, reject) => {
+        if(!fs.existsSync("version.cur")){
+            return reject("Could not get current version");
+        }
+        let currentVersion = fs.readFileSync("version.cur", {encoding: "utf-8"});
+        getLatestCommit().then(latest => {
+            console.log(`Latest version: ${latest}`);
+            console.log(`Installed version: ${currentVersion}`);
+            if(latest.trim() === currentVersion.trim()){
+                resolve(false);
+            }
+            else{
+                console.log("New version available");
+                resolve(true);
+            }
+        }, err => {
+            reject(err);
+        });
+    });
 }
 
 function buildGame(installLocation){
@@ -114,12 +163,17 @@ function downloadGame(){
         try{
             const archive = fs.createWriteStream(path.join(__dirname, "stardew-valley.zip"));
             https.get(gitURL, response => {
-                if(![200, 302].includes(response.statusCode)){
+                if(response.statusCode >= 400){
                     return reject(response.statusCode);
                 }
                 response.pipe(archive);
                 archive.on("finish", () => {
                     archive.close();
+                    getLatestCommit().then(value => {
+                        fs.writeFileSync("version.cur", value, {encoding: 'utf-8'});
+                    }, err => {
+                        console.error("COULD NOT GET LATEST COMMIT HASH: " + err);
+                    });
                     return resolve("OK");
                 })
                 .on("error", (err) => {
@@ -232,5 +286,6 @@ module.exports = {
     extract: extractGame,
     build: buildGame,
     checkInstalled: checkInstalled,
-    launch: launchGame
+    launch: launchGame,
+    checkForUpdate: checkForUpdate
 };

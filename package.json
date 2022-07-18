@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.9",
-    "eslint": "^8.19.0",
+    "eslint": "^8.20.0",
     "follow-redirects": "^1.15.1",
     "jshint": "^2.13.5",
     "jslint": "^0.12.1",

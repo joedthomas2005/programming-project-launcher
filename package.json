@@ -17,14 +17,12 @@
   },
   "homepage": "https://github.com/joedthomas2005/programming-project-launcher#readme",
   "devDependencies": {
-    "electron": "^19.0.8"
+    "electron": "^19.0.8",
+    "jshint": "^2.13.5"
   },
   "dependencies": {
     "adm-zip": "^0.5.9",
-    "eslint": "^8.20.0",
     "follow-redirects": "^1.15.1",
-    "jshint": "^2.13.5",
-    "jslint": "^0.12.1",
     "path": "^0.12.7"
   }
 }

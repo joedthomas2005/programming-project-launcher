@@ -2,14 +2,24 @@
 const defaultLocation = "./app";
 
 window.onload = () => {
+    setMenuOpen(false);
     document.getElementById("progressIndicator").hidden = true;
+    document.getElementById("saveConfigBtn").onclick = () => {
+        saveConfig().then(() => {
+            alert("Configuration Saved!");
+        }, err => {
+            alert(`Could not save configuration.\nError is ${err}`);
+        });
+    };
+    loadStoredConfig();
     installer.checkInstalled(defaultLocation).then((installed) => {
         if(installed){
-            installer.checkForUpdate().then(updateAvailable => {
-                setMainButtonEvent(updateAvailable ? "update" : "launch");
-            }, err => {
-                alert(`Error, could not check for updates...\nError is ${err}`);
-            });
+            setMainButtonEvent("launch");
+            // installer.checkForUpdate().then(updateAvailable => {
+            //     setMainButtonEvent(updateAvailable ? "update" : "launch");
+            // }, err => {
+            //     alert(`Error, could not check for updates...\nError is ${err}`);
+            // });
         }
         else{
             setMainButtonEvent("install");
@@ -18,6 +28,36 @@ window.onload = () => {
         alert(`Error, could not check install status\nError is ${error}`);
     });
 };
+
+function loadStoredConfig(){
+    installer.getConfiguration().then(config => {
+        document.getElementById("resolution").value = `${config.width}x${config.height}`;
+        document.getElementById("fullscreen").checked = config.fullscreen;
+    });
+}
+function setMenuOpen(open){
+    document.getElementById("configMenu").style.display = open ? "flex" : "none";
+}
+
+function getMenuOpen(){
+    return document.getElementById("configMenu").style.display != "none";
+}
+
+function toggleMenu(){
+    setMenuOpen(!getMenuOpen());
+}
+
+function saveConfig(){
+    //Promise
+    let fullscreen = document.getElementById("fullscreen").checked;
+    let resolution = document.getElementById("resolution").value;
+    let [width,height] = resolution.split("x");
+    return installer.saveConfiguration({
+            width: width,
+            height: height,
+            fullscreen: fullscreen
+    });
+}
 
 function launchButtonClickHandler(){
     installer.launch(defaultLocation, {

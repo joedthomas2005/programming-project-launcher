@@ -3,3 +3,5 @@ app/
 npm-debug.log
 .jshintrc
 version.cur
+.vscode/
+launch.conf

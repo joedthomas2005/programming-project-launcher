@@ -4,16 +4,35 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div id="content" height>
+    <div id="content">
         <div id="title">
             <h1>Stardew Valley</h1>
             <h2>(real)</h2>
         </div>
-        <input id="mainButton" class="btn" type="button">
+        <input id="mainButton" class="bigBtn" type="button">
         <div id="progressIndicator">
             <progress id="progressBar" max="100" value="0"></progress>
             <br>
             <label for="progressBar" id="progressLabel"></label>
         </div>
+    </div>
+    <input type="image" id="openConfigBtn" class="iconBtn" onclick="toggleMenu()" src="icons/settings.png">
+    
+    <div id="configMenu">
+        <div class="menuItem">
+            <label for="fullscreen">Fullscreen</label>
+            <input type="checkbox" id="fullscreen">
+        </div>
+        
+        <div class="menuItem">
+            <label for="resolution">Resolution</label>
+            <select id="resolution">
+                <option value="2560x1440">2560x1440</option>
+                <option value="1920x1080">1920x1080</option>
+                <option value="1280x720">1280x720</option>
+                <option value="640x480">640x480</option>
+            </select>  
+        </div>
+        <input type="button" id="saveConfigBtn" class="bigBtn" value="Save">
     </div>
 </body>

@@ -110,11 +110,20 @@ function buildGame(installLocation){
     });
 }
 
+function launchGameWithLoadedConfig(installLocation){
+    getLaunchConfiguration().then((config) => {
+        return launchGame(installLocation, config);
+    }, err => {
+        console.error(`Error getting launch configuration: ${err}`);
+        return launchGame(installLocation);
+    });
+}
+
 function launchGame(installLocation, launchOptions){
     return new Promise((resolve, reject) => {
-        let width = launchOptions?.width | 1920;
-        let height = launchOptions?.height | 1080;
-        let fullscreen = launchOptions?.fullscreen | true;
+        let width = launchOptions?.width ?? 1920;
+        let height = launchOptions?.height ?? 1080;
+        let fullscreen = launchOptions?.fullscreen ?? true;
         let swapInterval = launchOptions?.swapInterval | 1;
         let resourceDirectory = path.join(installLocation, "res");
         let classpath = [path.join(installLocation, "build")];
@@ -286,6 +295,6 @@ module.exports = {
     extract: extractGame,
     build: buildGame,
     checkInstalled: checkInstalled,
-    launch: launchGame,
+    launch: launchGameWithLoadedConfig,
     checkForUpdate: checkForUpdate
 };

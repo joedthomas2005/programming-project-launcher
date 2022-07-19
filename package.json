@@ -4,7 +4,7 @@
   "description": "A launcher for my stardew valley clone programming project",
   "main": "main.js",
   "scripts": {
-    "start": "electron . --disable-gpu-sandbox"
+    "start": "electron ."
   },
   "repository": {
     "type": "git",

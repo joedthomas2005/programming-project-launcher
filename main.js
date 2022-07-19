@@ -21,7 +21,7 @@ const createWindow = () => {
     ipcMain.handle("saveConfiguration", (_event, configuration) => actions.saveConfiguration(configuration));
     ipcMain.handle("checkForUpdate", _event => actions.checkForUpdate());
     win.loadFile(path.join(__dirname, "frontend/index.html"));
-    // win.removeMenu();
+    win.removeMenu();
 };
 
 app.whenReady().then(() => {

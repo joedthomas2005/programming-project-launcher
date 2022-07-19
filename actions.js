@@ -9,6 +9,10 @@ const gitLastCommitAPI = "https://api.github.com/repos/joedthomas2005/programmin
 const archiveName = "programming-project-master";
 let launchConf = "launch.conf";
 
+function sanitise(input, unix = false){
+    let escapeChar = unix ? "\\" : "^";
+    return input.replace(/&|&&|^|;|'|\"|>|<|\|/gi, x => `${escapeChar}${x}`);
+}
 //This is a breadth-first tree traversal
 function getDirectoryRecursive(dir){
     let contents = fs.readdirSync(dir);
@@ -97,7 +101,7 @@ function buildGame(installLocation){
             classpath.push(path.join(libDirectory, file));
         });
     
-        let buildCommand = `javac -d ${path.join(installLocation, "build")} -target 17 -cp \"${classpath.join(';')}\" ${srcFiles.join(" ")}`;
+        let buildCommand = sanitise(`javac -d ${path.join(installLocation, "build")} -target 17 -cp \"${classpath.join(';')}\" ${srcFiles.join(" ")}`);
         exec(buildCommand, (error, stdout, stderr) => {
             if(error){
                 return reject(error.message); //Command has failed to execute
@@ -133,8 +137,9 @@ function launchGame(installLocation, launchOptions){
         libFiles.forEach((file, index) => {
             classpath.push(path.join(libDirectory, file));
         });
-        let launchCommand = `java -classpath \"${classpath.join(';')}\" Main ${width} ${height} ${fullscreen} ${swapInterval} ${resourceDirectory}`;
+        let launchCommand = sanitise(`java -classpath \"${classpath.join(';')}\" Main ${width} ${height} ${fullscreen} ${swapInterval} ${resourceDirectory}`);
         exec(launchCommand, (error, stdout, stderr) => {
+            console.log(stdout);
             if(error){
                 return reject(error.message);
             }

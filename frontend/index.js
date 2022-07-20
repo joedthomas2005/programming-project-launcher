@@ -1,9 +1,9 @@
 //"installer" global exposed by preload (install, checkInstall ,launch)
 const defaultLocation = "./app";
+let mainButton;
 
 window.onload = () => {
-    setMenuOpen(false);
-    document.getElementById("progressIndicator").hidden = true;
+    mainButton = document.getElementById("mainBtn");
     document.getElementById("saveConfigBtn").onclick = () => {
         saveConfig().then(() => {
             alert("Configuration Saved!");
@@ -14,12 +14,11 @@ window.onload = () => {
     loadStoredConfig();
     installer.checkInstalled(defaultLocation).then((installed) => {
         if(installed){
-            setMainButtonEvent("launch");
-            // installer.checkForUpdate().then(updateAvailable => {
-            //     setMainButtonEvent(updateAvailable ? "update" : "launch");
-            // }, err => {
-            //     alert(`Error, could not check for updates...\nError is ${err}`);
-            // });
+            installer.checkForUpdate().then(updateAvailable => {
+                setMainButtonEvent(updateAvailable ? "update" : "launch");
+            }, err => {
+                alert(`Error, could not check for updates...\nError is ${err}`);
+            });
         }
         else{
             setMainButtonEvent("install");
@@ -34,7 +33,13 @@ function loadStoredConfig(){
         document.getElementById("resolution").value = `${config.width}x${config.height}`;
         document.getElementById("fullscreen").checked = config.fullscreen;
     });
+    installer.getDevMode().then((dev) => {
+        document.getElementById("devMode").checked = dev;
+    }, err => {
+        alert(err);
+    });
 }
+
 function setMenuOpen(open){
     document.getElementById("configMenu").style.display = open ? "flex" : "none";
 }
@@ -48,11 +53,15 @@ function toggleMenu(){
 }
 
 function saveConfig(){
-    //Promise
+    let dev = document.getElementById("devMode").checked;
+    installer.setDevMode(dev);
+    installer.getDevMode().then(enabled => {
+        if(dev !== enabled) alert("Reload the launcher to enable/disable dev mode");
+    });
     let fullscreen = document.getElementById("fullscreen").checked;
     let resolution = document.getElementById("resolution").value;
     let [width,height] = resolution.split("x");
-    return installer.saveConfiguration({
+    return installer.saveConfiguration({        //Promise
             width: width,
             height: height,
             fullscreen: fullscreen
@@ -70,11 +79,20 @@ function launchButtonClickHandler(){
     }, (error) => {
         alert(`Oops! Something went wrong...\nError message is ${error}`);
     });
-    let mainButton = document.getElementById("mainButton");
     mainButton.disabled = true;
     mainButton.value = "Running";
 }
 
+function uninstall(){
+    let secondaryButton = document.getElementById("secondaryBtn");
+    secondaryButton.disabled = true;
+    secondaryButton.value = "Uninstalling...";
+    mainButton.disabled = true;
+    installer.uninstall(defaultLocation).then(() => {
+        alert("Uninstalled successfully!");
+        setMainButtonEvent("install");
+    });
+}
 function install(){
     return new Promise((resolve, reject) => {
         document.getElementById("progressIndicator").hidden = false;
@@ -116,7 +134,6 @@ function updateButtonClickHandler(){
         alert(`Could not install update. Message is ${err}`);
         setMainButtonEvent("updated");
     });
-    let mainButton = document.getElementById("mainButton");
     mainButton.disabled = true;
     mainButton.value = "Updating...";
 }
@@ -130,13 +147,15 @@ function installButtonClickHandler(){
         setMainButtonEvent("install");
     });
 
-    let mainButton = document.getElementById("mainButton");
     mainButton.disabled = true;
     mainButton.value = "Installing...";
 
 }
 function setMainButtonEvent(event){
-    let mainButton = document.getElementById("mainButton");
+    let secondaryButton = document.getElementById("secondaryBtn");
+    secondaryButton.hidden = false;
+    secondaryButton.disabled = false;
+    secondaryButton.value = "Uninstall";
     mainButton.disabled = false;
     mainButton.removeEventListener("click", launchButtonClickHandler);
     mainButton.removeEventListener("click", installButtonClickHandler);
@@ -144,6 +163,7 @@ function setMainButtonEvent(event){
 
     switch(event) {
         case "install":
+            secondaryButton.hidden = true;
             mainButton.addEventListener("click", installButtonClickHandler);
             mainButton.value = "Install";
             break;

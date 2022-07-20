@@ -5,3 +5,4 @@ npm-debug.log
 version.cur
 .vscode/
 launch.conf
+dev_mode_enabled.conf

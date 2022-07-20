@@ -1,10 +1,15 @@
 body{
-    font-family:'Courier New', Courier, monospace;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+}
+
+#title{
+    margin-top: 10%;
+    text-align: center;
 }
 
 .bigBtn {
-    border-radius: 10%;
-    outline: 1px solid grey;
+    border-radius: 20px;
+    border: 3px solid whitesmoke;
     margin-top: 20%;
     font-size:large;
     width: 100px;
@@ -16,15 +21,21 @@ body{
     background-color: seagreen;
 }
 
-#title{
-    margin-top: 10%;
-    text-align: center;
-}
-
 .iconBtn{
     width: 50px;
     height: 50px;
     border: none;
+}
+
+.smallBtn {
+    border-radius: 8px;
+    border: 1px solid lightgray;
+    background-color: #DDEEDD;
+    width: 80px;
+    height: 20px;
+}
+.smallBtn:active{
+    background-color: #BBCCBB;
 }
 #openConfigBtn{
     position:absolute;
@@ -46,7 +57,7 @@ body{
     bottom: 0px;
     padding: 10px;
     position: absolute;
-    display: flex;
+    display: none;
     flex-direction: column;
     background-color:black;
     color: white;

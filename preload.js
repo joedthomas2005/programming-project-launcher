@@ -1,5 +1,4 @@
 const { contextBridge, ipcRenderer } = require("electron");
-const path = require("path");
 
 contextBridge.exposeInMainWorld('installer', {
     uninstall: location => ipcRenderer.invoke("uninstall", location),
@@ -10,5 +9,7 @@ contextBridge.exposeInMainWorld('installer', {
     checkInstalled: location => ipcRenderer.invoke("checkInstalled", location),
     getConfiguration: () => ipcRenderer.invoke("getConfiguration"),
     saveConfiguration: (configuration) => ipcRenderer.invoke("saveConfiguration", configuration),
-    checkForUpdate: () => ipcRenderer.invoke("checkForUpdate")
+    checkForUpdate: () => ipcRenderer.invoke("checkForUpdate"),
+    setDevMode: enabled => ipcRenderer.invoke("setDevMode", enabled),
+    getDevMode: () => ipcRenderer.invoke("getDevMode")
 });

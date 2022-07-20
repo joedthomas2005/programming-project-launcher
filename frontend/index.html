@@ -9,8 +9,10 @@
             <h1>Stardew Valley</h1>
             <h2>(real)</h2>
         </div>
-        <input id="mainButton" class="bigBtn" type="button">
-        <div id="progressIndicator">
+        <input id="mainBtn" class="bigBtn" type="button" value="Install">
+        <br>
+        <input id="secondaryBtn" class="smallBtn" type="button" value="Uninstall" onclick="uninstall()">
+        <div id="progressIndicator" hidden="true">
             <progress id="progressBar" max="100" value="0"></progress>
             <br>
             <label for="progressBar" id="progressLabel"></label>
@@ -32,6 +34,11 @@
                 <option value="1280x720">1280x720</option>
                 <option value="640x480">640x480</option>
             </select>  
+        </div>
+
+        <div class="menuItem">
+            <label for="devMode">Dev Mode</label>
+            <input type="checkbox" id="devMode">
         </div>
         <input type="button" id="saveConfigBtn" class="bigBtn" value="Save">
     </div>

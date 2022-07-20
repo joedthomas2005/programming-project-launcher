@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const os = require("os")
 const { exec } = require("child_process");
 const https = require("follow-redirects").https;
 const admZip = require("adm-zip");
@@ -7,11 +8,12 @@ const admZip = require("adm-zip");
 const gitURL = "https://github.com/joedthomas2005/programming-project/archive/refs/heads/master.zip";
 const gitLastCommitAPI = "https://api.github.com/repos/joedthomas2005/programming-project/commits/master";
 const archiveName = "programming-project-master";
-let launchConf = "launch.conf";
+const launchConf = "launch.conf";
+const unix = os.platform !== "Win32";
 
 function sanitise(input, unix = false){
     let escapeChar = unix ? "\\" : "^";
-    return input.replace(/&|&&|^|;|'|\"|>|<|\|/gi, x => `${escapeChar}${x}`);
+    return input.replace(/&|&&|^|;|'|\"|>|<|\|/gi, x => `${escapeChar}${x}`); //This just escapes any special characters
 }
 //This is a breadth-first tree traversal
 function getDirectoryRecursive(dir){
@@ -93,7 +95,7 @@ function buildGame(installLocation){
         }
     
         let srcRoot = path.join(installLocation, "src");
-        let libDirectory = path.join(installLocation, "lib");
+        let libDirectory = path.join(installLocation, "lib", unix ? "linux" : "windows");
         let classpath = [path.join(installLocation, "build")];
         let srcFiles = getDirectoryRecursive(srcRoot);
         let libFiles = fs.readdirSync(libDirectory);
@@ -101,7 +103,7 @@ function buildGame(installLocation){
             classpath.push(path.join(libDirectory, file));
         });
     
-        let buildCommand = sanitise(`javac -d ${path.join(installLocation, "build")} -target 17 -cp \"${classpath.join(';')}\" ${srcFiles.join(" ")}`);
+        let buildCommand = `javac -d ${path.join(installLocation, "build")} -target 17 -cp \"${classpath.join(`${unix ? ":" : ";"}`)}\" ${srcFiles.join(" ")}`;
         exec(buildCommand, (error, stdout, stderr) => {
             if(error){
                 return reject(error.message); //Command has failed to execute
@@ -131,13 +133,13 @@ function launchGame(installLocation, launchOptions){
         let swapInterval = launchOptions?.swapInterval | 1;
         let resourceDirectory = path.join(installLocation, "res");
         let classpath = [path.join(installLocation, "build")];
-        let libDirectory = path.join(installLocation, "lib");
-        
+        let libDirectory = path.join(installLocation, "lib", unix ? "linux" : "windows");
         let libFiles = fs.readdirSync(libDirectory);
         libFiles.forEach((file, index) => {
             classpath.push(path.join(libDirectory, file));
         });
-        let launchCommand = sanitise(`java -classpath \"${classpath.join(';')}\" Main ${width} ${height} ${fullscreen} ${swapInterval} ${resourceDirectory}`);
+	let launchParams = sanitise(`${width} ${height} ${fullscreen} ${swapInterval} ${resourceDirectory}`, unix)
+        let launchCommand = `java -classpath \"${classpath.join(`${unix ? ":" : ";"}`)}\" Main ${launchParams}`;
         exec(launchCommand, (error, stdout, stderr) => {
             console.log(stdout);
             if(error){
